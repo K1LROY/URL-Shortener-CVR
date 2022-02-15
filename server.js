@@ -12,6 +12,7 @@ var app = express();
 var port = process.env.PORT || 3000;
 
 /** this project needs a db !! **/
+
 // mongoose.connect(process.env.DB_URI);
 
 app.use(cors());
@@ -25,18 +26,29 @@ app.get("/", function (req, res) {
   res.sendFile(process.cwd() + "/views/index.html");
 });
 
-// your first API endpoint...
+/**
+// your first API endpoint... 
 app.get("/api/hello", function (req, res) {
-  res.json({ greeting: "hello API" });
+  res.json({greeting: 'hello API'});
 });
+
+
 
 app.listen(port, function () {
-  console.log("Node.js listening ...");
+  console.log('Node.js listening ...');
 });
 
+**/
+
+app.listen(3000);
+
 /* Database Connection */
+/* 1 - Replace this with your valid DB creds */
 let uri =
   "mongodb+srv://devilfang:1234@redux-study.jelsk.mongodb.net/URLShortener?retryWrites=true&w=majority";
+mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+//let uri = 'mongodb+srv://user1:' + process.env.PW + '@freecodecamp.b0myq.mongodb.net/db1?retryWrites=true&w=majority'
 mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 let urlSchema = new mongoose.Schema({
@@ -49,17 +61,20 @@ let Url = mongoose.model("Url", urlSchema);
 let bodyParser = require("body-parser");
 let responseObject = {};
 app.post(
-  "/api/shorturl/new",
+  "/api/shorturl/",
   bodyParser.urlencoded({ extended: false }),
   (request, response) => {
     let inputUrl = request.body["url"];
 
+    /* 2 - Replace the regex with something in which an address like ftp:/john-doe.org is not allowed*/
+
     let urlRegex = new RegExp(
-      /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)?/gi
+      /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi
     );
 
     if (!inputUrl.match(urlRegex)) {
-      response.json({ error: "Invalid URL" });
+      console.log("Unmatched");
+      response.json({ error: "invalid URL" });
       return;
     }
 
@@ -97,7 +112,7 @@ app.get("/api/shorturl/:input", (request, response) => {
     if (!error && result != undefined) {
       response.redirect(result.original);
     } else {
-      response.json("URL not Found");
+      response.json({ error: "invalid url" });
     }
   });
 });
